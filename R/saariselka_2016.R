@@ -88,9 +88,9 @@
 #   )$set_y1(2014)$set_avg(F)$set_fx('m')$set_delta_x(0)$set_pc('12')$set_ylim(-40,400)$plot_pc(dazzle=T)
 # eng$new()$plot_save('exports_pc_mth_ammunitions')
 
-  eng$new(
-    eng_data$new('currency')$get_group(T)
-  )$set_y1(2010)$set_avg(T)$set_fx('m')$set_delta_x(2)$set_pc('12')$set_ylim(-30,50)$plot_pc(dazzle=T)
+  # orgalime::eng$new(
+  #   orgalime::eng_data$new('currency')$get_group(T)
+  # )$set_y1(2010)$set_avg(T)$set_fx('m')$set_delta_x(2)$set_pc('12')$set_ylim(-30,50)$plot_pc(dazzle=T)
 
 
 
@@ -101,13 +101,13 @@
   #abc <- beamafx::fx_series$new('USD')$set_date1('2000/01/01')$set_date2('2017/01/01')$set_freq('d')$get_data()
   #abc <- beamafx::fx_series$new('EUR')$set_date1('2000/01/01')$set_date2('2017/01/01')$set_freq('d')$get_data()
   #abc <- beamafx::fx_series$new('JPY')$set_date1('2000/01/01')$set_date2('2017/01/01')$set_freq('d')$get_data()
-
-  eng_data$new()$add_currency_data('USD','2000/01/01','2017/01/01','USD - US Dollar($)')
-  eng_data$new()$add_currency_data('EUR','2000/01/01','2017/01/01','EUR - Euro (€)')
-  eng_data$new()$add_currency_data('JPY','2000/01/01','2017/01/01','JPY - Japanese (¥)')
-  eng_data$new()$add_currency_data('CNY','2006/01/01','2017/01/01','CNY - Chinese Yuan Renminbi (¥)')
-  eng_data$new()$add_currency_data('INR','2009/01/01','2017/01/01','INR - Indian Rupee')
-  eng_data$new()$add_currency_data('BRL','2008/01/01','2017/01/01','BRL - Brazillian Real (R$)')
+#
+#   eng_data$new()$add_currency_data('USD','2000/01/01','2017/01/01','USD - US Dollar($)')
+#   eng_data$new()$add_currency_data('EUR','2000/01/01','2017/01/01','EUR - Euro (€)')
+#   eng_data$new()$add_currency_data('JPY','2000/01/01','2017/01/01','JPY - Japanese (¥)')
+#   eng_data$new()$add_currency_data('CNY','2006/01/01','2017/01/01','CNY - Chinese Yuan Renminbi (¥)')
+#   eng_data$new()$add_currency_data('INR','2009/01/01','2017/01/01','INR - Indian Rupee')
+#   eng_data$new()$add_currency_data('BRL','2008/01/01','2017/01/01','BRL - Brazillian Real (R$)')
   #
 # eng$new(
 #   paste(
