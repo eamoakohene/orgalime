@@ -37,6 +37,7 @@ eng <- R6::R6Class(
     freq_default = 0,
     delta_x = 0,
     skale =1,
+    #PAIRED = c("#377EB8","#E41A1C"),
 
 
     y_lim = numeric(2),
@@ -467,41 +468,52 @@ eng <- R6::R6Class(
 
       invisible(self)
     }
+    ,get_line_colours = function(){
+      c(
+        beamaColours::get_line_colour(),
+        beamaColours::get_smooth_colour(),
+        RColorBrewer::brewer.pal(9,"Set1")
+      )
+    }
+    ,get_pc_ylab = function(){
 
+        my_ylab <- NULL
+        my_pc <- as.numeric(self$pc)
+        my_frq <- self$freq
 
-    ,plot_pc = function(brewer_set = "Set1",ytitle=''){
+        if(!(my_pc ==0 )){
+          if(self$fx=="d"){
+            my_ylab <- paste0(k,' day ',self$ylab)
+          }else if((self$fx=="m") || (self$fx=='mt')){
 
+            my_ylab <- paste0(my_frq,' month ',self$ylab)
+
+          }else if((self$fx=="q") || (self$fx=='qt')){
+            my_ylab <- paste0(my_frq,' quarter ',self$ylab)
+
+          }else if((self$fx=="y") || (self$fx=='yt')){
+
+            my_ylab <- " Yearly % change "
+
+          }
+        }
+        return(my_ylab)
+    }
+
+    ,plot_pc = function(brewer_set = "Set1",ytitle='', dazzle=FALSE){
+      require(ggplot2)
       my_data<- self$get_data()
 
 
-      my_ylab <- ytitle
+
       my_pc <- as.numeric(self$pc)
       my_frq <- self$freq
-
-      if(!(my_pc ==0 )){
-              if(self$fx=="d"){
-                my_ylab <- paste0(k,' day ',self$ylab)
-              }else if((self$fx=="m") || (self$fx=='mt')){
-
-                my_ylab <- paste0(my_frq,' month ',self$ylab)
-
-              }else if((self$fx=="q") || (self$fx=='qt')){
-                my_ylab <- paste0(my_frq,' quarter ',self$ylab)
-
-              }else if((self$fx=="y") || (self$fx=='yt')){
-
-                my_ylab <- " Yearly % change "
-
-              }
-      }
-
+      my_ylab <- ifelse( ytitle=='', self$get_pc_ylab(), ytitle )
 
 
       if( (trimws(my_data$data_desc[1])=='dummy-desc') && (nchar(self$dt_desc)>0)){
         my_data$data_desc <- self$dt_desc
       }
-
-
 
       my_data <- dplyr::filter( my_data, !is.na(pc) )
       my_data$date <- as.Date( paste( my_data$yr, my_data$mth, my_data$dy, sep="-"))
@@ -529,38 +541,45 @@ eng <- R6::R6Class(
 
         #return(gtxt)
 
-        g <- ggplot2::ggplot(my_data,ggplot2::aes(x=date,y=pc))
-        g <- g + ggplot2::geom_line(size=1.5,colour = self$colour)
-        g <- g + ggplot2::facet_wrap( ~ data_desc)
-        g <- g + ggplot2::guides(colour=FALSE)
+        if(!dazzle){
+          g <- ggplot(my_data,aes(x=date,y=pc))
+          g <- g + geom_line(size=1.3,colour = self$colour)
+        }else{
+          g <- ggplot(my_data,aes(x=date,y=pc,colour=factor(data_desc)))
+          g <- g + geom_line(size=1.3,aes(colour=data_desc))
+          g <- g + scale_color_manual(values= self$get_line_colours())
+        }
+
+        g <- g + facet_wrap( ~ data_desc)
+        g <- g + guides(colour=FALSE)
         # my_intercepts <- c(min(my_data$pc,na.rm=TRUE),max(my_data$pc,na.rm=TRUE))
         #
-        g <- g+ ggplot2::geom_point(data=gtxt, ggplot2::aes(x=date,y=pc) ,size=5, colour = beamaColours::get_line_colour())
-        g <- g+ ggplot2::geom_point(data=gtxt, ggplot2::aes(x=date,y=pc,colour = factor(data_days)) ,size=4 )
-        g <- g+ ggplot2::geom_text(data=gtxt, ggplot2::aes(x=date,y=pc,label=private$set_decimal(pc,1)),vjust=-0.8,hjust=0.4,size=4,colour = beamaColours::get_smooth_colour())
-        g <- g+ ggplot2::theme(legend.position="none")
+        g <- g+ geom_point(data=gtxt, aes(x=date,y=pc) ,size=5, colour = beamaColours::get_line_colour())
+        g <- g+ geom_point(data=gtxt, aes(x=date,y=pc,colour = factor(data_days)) ,size=4 )
+        g <- g+ geom_text(data=gtxt, aes(x=date,y=pc,label=private$set_decimal(pc,1)),vjust=-0.8,hjust=0.4,size=4,colour = beamaColours::get_smooth_colour())
+        g <- g+ theme(legend.position="none")
 
         #g <- g + geom_hline(yintercept=my_intercepts,colour=colour_set,linetype='dashed')
       }else{
-                g <- ggplot2::ggplot(my_data, ggplot2::aes(x=date,y=pc,colour=data_code))
-                g <- g + ggplot2::geom_line( ggplot2::aes(group=data_code),size=1.3)
-                g <- g+ ggplot2::theme(
+                g <- ggplot(my_data, aes(x=date,y=pc,colour=data_code))
+                g <- g + geom_line( aes(group=data_code),size=1.3)
+                g <- g+ theme(
                   legend.position = c(self$legend_x, self$legend_y),
                   legend.background = element_rect(fill = NA, colour = NA),#lgpos$fill
                   legend.title=element_blank(),
                   text = element_text(12)
                 )
-                g <- g+ ggplot2::scale_colour_brewer( palette = brewer_set )
+                g <- g+ scale_colour_brewer( palette = brewer_set )
 
       }
 
-      g <- g + ggplot2::labs(title= self$title,x="",y = my_ylab)
-      g <- g + ggplot2::geom_hline(ggplot2::aes(yintercept=0))
+      g <- g + labs(title= self$title,x="",y = my_ylab)
+      g <- g + geom_hline(aes(yintercept=0))
 
 
 
       if( !(self$y_lim[1] == 0) ){
-              g <- g + ggplot2::ylim( self$y_lim )
+              g <- g + ylim( self$y_lim )
       }
 
       if( !(self$delta_x == 0) ){
@@ -577,7 +596,7 @@ eng <- R6::R6Class(
         #return(list(min_date,max_date))
         ###
 
-        g <- g + ggplot2::xlim( min_date,max_date )
+        g <- g + xlim( min_date,max_date )
       }
 
       print(g)

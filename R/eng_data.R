@@ -58,6 +58,25 @@ eng_data = R6::R6Class(
        return( self$groups)
      }
 
+    ,add_currency_data = function(code,dt1,dt2,code_desc){
+
+      cat("Starting update of ",code," @",format(Sys.time(), "%a %b %d %X %Y %Z"),"\n")
+      df <- beamafx::fx_series$new(code)$set_date1(dt1)$set_date2(dt2)$set_freq('d')$get_data()
+      #df <- dplyr::filter(df,data_code ==code)
+      sql<- sprintf(
+        paste0(
+          "insert into trends_data (yr,mth,dy,data_unit,data_value,data_code,data_src,data_desc) values ",
+          "(%i,%i,%i,'1 GBP',%s,'%s','ECB','%s')"
+        ),
+        df$yr, df$mth ,df$dy , round(df$value,5), df$data_code,code_desc
+      )
+      #return(sql)
+
+      private$run_sql(sql)
+      cat("Finished updating ",code," @",format(Sys.time(), "%a %b %d %X %Y %Z"),"\n")
+
+      invisible(self)
+    }
 
 
   )#public
