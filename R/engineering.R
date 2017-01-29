@@ -470,9 +470,11 @@ eng <- R6::R6Class(
     }
     ,get_line_colours = function(){
       c(
-        beamaColours::get_line_colour(),
-        beamaColours::get_smooth_colour(),
-        RColorBrewer::brewer.pal(9,"Set1")
+         RColorBrewer::brewer.pal(9,"Set1")[-6]
+        ,RColorBrewer::brewer.pal(8,"Set2")
+        #beamaColours::get_line_colour(),
+        #beamaColours::get_smooth_colour(),
+
       )
     }
     ,get_pc_ylab = function(){
@@ -500,7 +502,7 @@ eng <- R6::R6Class(
         return(my_ylab)
     }
 
-    ,plot_pc = function(brewer_set = "Set1",ytitle='', dazzle=FALSE){
+    ,plot_pc = function(brewer_set = "Set1",ytitle=NULL, dazzle=FALSE){
       require(ggplot2)
       my_data<- self$get_data()
 
@@ -508,7 +510,10 @@ eng <- R6::R6Class(
 
       my_pc <- as.numeric(self$pc)
       my_frq <- self$freq
-      my_ylab <- ifelse( ytitle=='', self$get_pc_ylab(), ytitle )
+      my_ylab <- self$get_pc_ylab()
+      if(!is.null( ytitle )){
+        my_ylab <- ytitle
+      }
 
 
       if( (trimws(my_data$data_desc[1])=='dummy-desc') && (nchar(self$dt_desc)>0)){
@@ -546,7 +551,8 @@ eng <- R6::R6Class(
           g <- g + geom_line(size=1.3,colour = self$colour)
         }else{
           g <- ggplot(my_data,aes(x=date,y=pc,colour=factor(data_desc)))
-          g <- g + geom_line(size=1.3,aes(colour=data_desc))
+
+          g <- g + geom_line(size=1.2,aes(colour=data_desc))
           g <- g + scale_color_manual(values= self$get_line_colours())
         }
 
@@ -741,6 +747,9 @@ eng <- R6::R6Class(
 
 
     }
+  ,to_clipboard = function( x, row.names=FALSE, col.names=TRUE, ...) {
+    write.table( x,"clipboard", sep="\t", row.names=row.names, col.names=col.names, ...)
+ }
 
  )
   ,private = list(

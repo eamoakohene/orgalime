@@ -59,6 +59,8 @@ eng_data = R6::R6Class(
      }
 
     ,add_currency_data = function(code,dt1,dt2,code_desc){
+      #cat("Deleting old records ...\n")
+      #private$run_sql(sprintf("delete from trends_data where data_code='%s'",code))
 
       cat("Starting update of ",code," @",format(Sys.time(), "%a %b %d %X %Y %Z"),"\n")
       df <- beamafx::fx_series$new(code)$set_date1(dt1)$set_date2(dt2)$set_freq('d')$get_data()
@@ -78,6 +80,35 @@ eng_data = R6::R6Class(
       invisible(self)
     }
 
+    ,add_ons_data = function(code,code_unit,code_desc,dt1,dt2=NULL){
+
+      cat("Starting update of ",code," @",format(Sys.time(), "%a %b %d %X %Y %Z"),"\n")
+      df <- onsR2::download(code=code,format='df')$m_data
+
+      ndf <- NULL
+      cat('ok so far \n')
+      ndf$yr <- lubridate::year(df$date)
+      ndf$mth <- lubridate::month(df$date)
+      ndf$dy <- lubridate::day(df$date)
+      ndf$value <- as.numeric(df$value)
+      cat('ok so far \n')
+
+      df <- dplyr::filter(as.data.frame(ndf),yr > lubridate::year(dt1) )
+      cat('ok so far after filter\n')
+      sql<- sprintf(
+        paste0(
+          "insert into trends_data (yr,mth,dy,data_unit,data_value,data_code,data_src,data_desc) values ",
+          "(%i,%i,%i,'%s',%s, '%s','ONS','%s')"
+        ),
+        df$yr, df$mth ,df$dy, code_unit , round(df$value,5), code ,code_desc
+      )
+      #return(sql)
+
+      private$run_sql(sql)
+      cat("Finished updating ",code," @",format(Sys.time(), "%a %b %d %X %Y %Z"),"\n")
+
+      invisible(self)
+    }
 
   )#public
 
